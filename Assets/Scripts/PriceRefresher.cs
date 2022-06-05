@@ -70,7 +70,7 @@ public class PriceRefresher : MonoBehaviour
 
         if (Number == 0)
         {
-            if (prodScript.BuyMult != 3000)
+            if (prodScript.BuyMult != 800)
             {
                 text.text = $"x{prodScript.BuyMult}";
             }
@@ -83,11 +83,15 @@ public class PriceRefresher : MonoBehaviour
         {
             if (prodScript.TotalProduction < 1000000)
             {
-                text.text = $"BPS:{prodScript.TotalProduction.ToString("0", System.Globalization.CultureInfo.GetCultureInfo("en-US"))}";
+                text.text = $"BPS: {prodScript.TotalProduction.ToString("0", System.Globalization.CultureInfo.GetCultureInfo("en-US"))}";
+            }
+            else if (prodScript.TotalProduction < 1e305)
+            {
+                text.text = $"BPS: {prodScript.TotalProduction.ToString("0.00e0", System.Globalization.CultureInfo.GetCultureInfo("en-US"))}";
             }
             else
             {
-                text.text = $"BPS:{prodScript.TotalProduction.ToString("0.00e0", System.Globalization.CultureInfo.GetCultureInfo("en-US"))}";
+                text.text = $"BPS: enough for Spire";
             }
         }
         if (Number == 11111)

@@ -7,20 +7,21 @@ public class PrestigeUpgrades1 : MonoBehaviour
 {
     public Button button;
     public Color32 maxUpgradeColor;
-    public double Overseers, OP, OPOnPrestige1;
+    public double Overseers, OP, FlatOPOnPrestige1, OPOnPrestige1, BiomassForOverseer;
     public float AutoBuyersTickspeed;
     public int i, BPC1, AutoBuyerBuyMult, AutoClicks;
     public bool QueenAutoBuyer, HiveAutoBuyer, BuyMax, BuyMaxAutoBuyer;
     public GameObject[] upgrades;
-    public GameObject Merge;
+    public GameObject Merge, BuyMaxButton;
     public double[] upgradesPrices;
     public double OPMultUpgradePrice, BuyMaxUpgradePrice, BPCUpgradePrice, AutoClickUpgradePrice, QueenAutoBuyerUpgradePrice, HiveAutoUpgradePrice, AutoBuyerTickspeedUpgradePrice, AutoBuyerBuyMaxUpgradePrice, ProductionCost_X10MultUpgradePrice, ByTenMultUpgradePrice;
     public double OPMult;
     private void Start()
     {
-        maxUpgradeColor = new Color32(255, 155, 0, 255);
+        maxUpgradeColor = new Color32(234, 0, 214, 255);
         button = GetComponent<Button>();
         {
+            BiomassForOverseer = 1e40;
             OPMult = 1;
             OPMultUpgradePrice = 1;
             BPCUpgradePrice = 1;
@@ -42,39 +43,24 @@ public class PrestigeUpgrades1 : MonoBehaviour
     {
         upgradesPrices = new double[] { OPMultUpgradePrice, BuyMaxUpgradePrice, BPCUpgradePrice, AutoClickUpgradePrice, QueenAutoBuyerUpgradePrice, HiveAutoUpgradePrice, AutoBuyerTickspeedUpgradePrice, AutoBuyerBuyMaxUpgradePrice,  ProductionCost_X10MultUpgradePrice, ByTenMultUpgradePrice };
         //Debug.Log(upgradesPrices);
-
+        OPOnPrestige1 = FlatOPOnPrestige1 * OPMult;
         {
-            if (GetComponent<BiomassManager>().biomass / 1e30 > 1)
+            if (GetComponent<BiomassManager>().biomass / BiomassForOverseer > 1)
             {
-                OPOnPrestige1 = 1 * OPMult;
+                if (BiomassForOverseer < 1e281)
+                {
+                    if (BiomassForOverseer != 1e280)
+                    {
+                        BiomassForOverseer *= 1e40;
+                    }
+                    else
+                    {
+                        BiomassForOverseer *= 1e1;
+                    }
+                    //Debug.Log(BiomassForOverseer);
+                    FlatOPOnPrestige1 ++;
+                }
             }
-            if (GetComponent<BiomassManager>().biomass / 1e50 > 1)
-            {
-                OPOnPrestige1 = 2 * OPMult;
-            }
-            if (GetComponent<BiomassManager>().biomass / 1e75 > 1e50)
-            {
-                OPOnPrestige1 = 3 * OPMult;
-            }
-            if (GetComponent<BiomassManager>().biomass / 1e75 > 1e125)
-            {
-                OPOnPrestige1 = 5 * OPMult;
-            }
-            if (GetComponent<BiomassManager>().biomass / 1e75 > 1e200)
-            {
-                OPOnPrestige1 = 7 * OPMult;
-            }
-            //if (GetComponent<BiomassManager>().biomass / 1e50 > 1e150)
-            //{
-            //    OPOnPrestige1 = 4 * OPMult;
-            //}
-            //if (GetComponent<BiomassManager>().biomass / 1e50 > 1e200)
-            //{
-            //    OPOnPrestige1 = 5 * OPMult;
-            //}
-            //if (GetComponent<BiomassManager>().biomass / 1e50 > 1e250)
-            //{
-            //    OPOnPrestige1 = 6 * OPMult;
         }// OPOnPrestige
 
         foreach (double UpgradePrice in upgradesPrices)
@@ -106,7 +92,8 @@ public class PrestigeUpgrades1 : MonoBehaviour
     {
         Overseers += OPOnPrestige1;
         OP += OPOnPrestige1;
-        OPOnPrestige1 = 0;
+        FlatOPOnPrestige1 = OPOnPrestige1 = 0;
+        BiomassForOverseer = 1e40;
         AutoBuyersRefresh();
         GetComponent<ProductionPurchase>().BaseValues();
         GetComponent<ProductionPurchase>().ZeroValues();
@@ -128,6 +115,8 @@ public class PrestigeUpgrades1 : MonoBehaviour
         {
             BuyMax = true;
             OP -= 1;
+            BuyMaxButton.SetActive(true);
+            GetComponent<ProductionPurchase>().BuyMultChange();
             Upgrade.transform.GetChild(1).GetComponent<Text>().text = $"UNLOCKED";
             Upgrade.transform.GetChild(1).GetComponent<Text>().fontSize = 32;
             MaxUpgradePurchased(Upgrade);
@@ -153,7 +142,21 @@ public class PrestigeUpgrades1 : MonoBehaviour
         {
             BPC1 = 3;
             OP -= BPCUpgradePrice;
-            Upgrade.transform.GetChild(1).GetComponent<Text>().text = $"BPC will increase by\n10% of BPS\nCurrently: 30%";
+            BPCUpgradePrice += 10;
+            Upgrade.transform.GetChild(1).GetComponent<Text>().text = $"BPC will increase by\n10% of BPS\nCurrently: 30%\nCost: {BPCUpgradePrice} OP";
+        }
+        else if (OP >= BPCUpgradePrice && BPC1 == 3)
+        {
+            BPC1 = 4;
+            OP -= BPCUpgradePrice;
+            BPCUpgradePrice += 10;
+            Upgrade.transform.GetChild(1).GetComponent<Text>().text = $"BPC will increase by\n10% of BPS\nCurrently: 40%\nCost: {BPCUpgradePrice} OP";
+        }
+        else if (OP >= BPCUpgradePrice && BPC1 == 4)
+        {
+            BPC1 = 5;
+            OP -= BPCUpgradePrice;
+            Upgrade.transform.GetChild(1).GetComponent<Text>().text = $"BPC will increase by\n10% of BPS\nCurrently: 50%";
             //Upgrade.transform.GetChild(1).GetComponent<Text>().alignment = TextAnchor.MiddleCenter;
             MaxUpgradePurchased(Upgrade);
         }
@@ -167,6 +170,10 @@ public class PrestigeUpgrades1 : MonoBehaviour
             {
                 AutoClicks++;
             }
+            if (AutoClicks > 6)
+            {
+                AutoClicks++;
+            }
             AutoClicks++;
             if (AutoClickUpgradePrice == 1)
             {
@@ -176,9 +183,10 @@ public class PrestigeUpgrades1 : MonoBehaviour
             {
                 AutoClickUpgradePrice += 5;
             }
+            GetComponent<BiomassManager>().HiveAutoClickInvoke();
             Upgrade.transform.GetChild(1).GetComponent<Text>().text = $"Makes some clicks every second\nCurrently: {AutoClicks}\nCost: {AutoClickUpgradePrice} OP";
         }
-        if (AutoClicks == 5)
+        if (AutoClicks == 10)
         {
             Upgrade.transform.GetChild(1).GetComponent<Text>().text = $"Makes some clicks every second\nCurrently: {AutoClicks}";
             //Upgrade.transform.GetChild(1).GetComponent<Text>().alignment = TextAnchor.MiddleCenter;
@@ -284,18 +292,18 @@ public class PrestigeUpgrades1 : MonoBehaviour
     {
         if (OP >= ByTenMultUpgradePrice)
         {
-            if (GetComponent<ProductionPurchase>().BuyTenMult<3.4)
+            if (GetComponent<ProductionPurchase>().BuyTenMult<2.9)
             {
                 GetComponent<ProductionPurchase>().BuyTenMult += 0.1;
                 OP -= ByTenMultUpgradePrice;
                 ByTenMultUpgradePrice += 25;
-                Upgrade.transform.GetChild(1).GetComponent<Text>().text = $"Buy ten multiplier\nincrease\nCurrently: +{GetComponent<ProductionPurchase>().BuyTenMult-1.5}\nCost: {ByTenMultUpgradePrice} OP";
+                Upgrade.transform.GetChild(1).GetComponent<Text>().text = $"Buy ten multiplier\nincrease\nCurrently: +{GetComponent<ProductionPurchase>().BuyTenMult-2.5}\nCost: {ByTenMultUpgradePrice} OP";
             }
             else
             {
                 OP -= ByTenMultUpgradePrice;
                 GetComponent<ProductionPurchase>().BuyTenMult += 0.1;
-                Upgrade.transform.GetChild(1).GetComponent<Text>().text = $"Buy ten multiplier\nincrease\nCurrently: +{GetComponent<ProductionPurchase>().BuyTenMult - 1.5}";
+                Upgrade.transform.GetChild(1).GetComponent<Text>().text = $"Buy ten multiplier\nincrease\nCurrently: +{GetComponent<ProductionPurchase>().BuyTenMult - 2.5}";
                 //Upgrade.transform.GetChild(1).GetComponent<Text>().alignment = TextAnchor.MiddleCenter;
                 MaxUpgradePurchased(Upgrade);
             }
@@ -335,13 +343,18 @@ public class PrestigeUpgrades1 : MonoBehaviour
         Overseers += 500;
         OP += 500;
     }
-    // доделать хуйню) | done
     // отображение цифр продакшена  | done))))))))))
     // обновление текста зафиксировать чтобы не мерцало | done
-    // примал квина
+    // примал квина | done
     // подсказки | done
-    // балансед
+    // баланс? | ?
     // хайв | done
-    // балаааансед
     // озер графика | nedone
+
+    // вылетающие клики с циферками прикольными | done
+    // примал квина | done
+    // шпиль(конец) | done
+    // меню подсказок
+    // красота нереальная | done
+    // баланс
 }

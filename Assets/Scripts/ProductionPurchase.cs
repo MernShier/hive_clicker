@@ -3,14 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class ProductionPurchase : MonoBehaviour
 {
-    public GameObject[] productions, Hints;
-    public GameObject StartScreen, MergeButton, Prestige1UpgradeTab;
+    public GameObject[] productions, Hints, WinTexts;
+    public GameObject StartScreen, MergeButton, MergeUnlockButton, QQUnlockButton, SpireUnlockButton, Prestige1UpgradeTab, SpireButton, WinScreen;
     public PrestigeUpgrades1 prestigeUpgrades1;
     [SerializeField] public GameObject[,] Texts;
-    public double baseBiomass, biomassCopy;
+    public double[] ProductionPrices;
+    public int i, wt;
+    public double baseBiomass, biomassCopy, OPCopy;
     public double TotalProduction, BuyTenMult, ProductionCostMult, OverseersMult, ProductionCostX10_Mult;
     public float AutoBuyersTickspeed;
 
@@ -19,65 +22,137 @@ public class ProductionPurchase : MonoBehaviour
     public double SecondQueenPrice, SecondQueenCount, SecondQueenProduction, SecondQueenBuyTen, SecondQueenTotalProduction, SecondQueenAddedCount;
     public double ThirdQueenPrice, ThirdQueenCount, ThirdQueenProduction, ThirdQueenBuyTen, ThirdQueenTotalProduction, ThirdQueenAddedCount;
     public double FourthQueenPrice, FourthQueenCount, FourthQueenProduction, FourthQueenBuyTen, FourthQueenTotalProduction, FourthQueenAddedCount;
+    public double FirstPrimalQueenPrice, FirstPrimalQueenCount, FirstPrimalQueenProduction, FirstPrimalQueenBuyTen, FirstPrimalQueenTotalProduction, FirstPrimalQueenAddedCount;
 
     public double FirstHivePrice, FirstHiveCount, FirstHiveProduction, FirstHiveBuyTen, FirstHiveTotalProduction, FirstHiveAddedCount;
     public double SecondHivePrice, SecondHiveCount, SecondHiveProduction, SecondHiveBuyTen, SecondHiveTotalProduction, SecondHiveAddedCount;
     public double ThirdHivePrice, ThirdHiveCount, ThirdHiveProduction, ThirdHiveBuyTen, ThirdHiveTotalProduction, ThirdHiveAddedCount;
     public double FourthHivePrice, FourthHiveCount, FourthHiveProduction, FourthHiveBuyTen, FourthHiveTotalProduction, FourthHiveAddedCount;
 
-    public double FirstQueenMult, SecondQueenMult, ThirdQueenMult, FourthQueenMult, FirstHiveMult, SecondHiveMult, ThirdHiveMult, FourthHiveMult;
+    public double FirstQueenMult, SecondQueenMult, ThirdQueenMult, FourthQueenMult, FirstPrimalQueenMult, FirstHiveMult, SecondHiveMult, ThirdHiveMult, FourthHiveMult;
 
     // слнл
     public double FirstQueenPriceCopy, FirstQueenCountCopy, FirstQueenBuyTenCopy, FirstQueenBuyBulkPrice, FirstQueenBuyBulkCount;
     public double SecondQueenPriceCopy, SecondQueenCountCopy, SecondQueenBuyTenCopy, SecondQueenBuyBulkPrice, SecondQueenBuyBulkCount;
     public double ThirdQueenPriceCopy, ThirdQueenCountCopy, ThirdQueenBuyTenCopy, ThirdQueenBuyBulkPrice, ThirdQueenBuyBulkCount;
     public double FourthQueenPriceCopy, FourthQueenCountCopy, FourthQueenBuyTenCopy, FourthQueenBuyBulkPrice, FourthQueenBuyBulkCount;
+    public double FirstPrimalQueenPriceCopy, FirstPrimalQueenCountCopy, FirstPrimalQueenBuyTenCopy, FirstPrimalQueenBuyBulkPrice, FirstPrimalQueenBuyBulkCount;
 
     public double FirstHivePriceCopy, FirstHiveCountCopy, FirstHiveBuyTenCopy, FirstHiveBuyBulkPrice, FirstHiveBuyBulkCount;
     public double SecondHivePriceCopy, SecondHiveCountCopy, SecondHiveBuyTenCopy, SecondHiveBuyBulkPrice, SecondHiveBuyBulkCount;
     public double ThirdHivePriceCopy, ThirdHiveCountCopy, ThirdHiveBuyTenCopy, ThirdHiveBuyBulkPrice, ThirdHiveBuyBulkCount;
     public double FourthHivePriceCopy, FourthHiveCountCopy, FourthHiveBuyTenCopy, FourthHiveBuyBulkPrice, FourthHiveBuyBulkCount;
 
-    public bool QueenAutoBuyerChecker, HiveAutoBuyerChecker, Hint2Checker, Hint3Checker, WinChecker;
+    public bool QueenAutoBuyerChecker, HiveAutoBuyerChecker, Hint2Checker, Hint3Checker, Hint4Checker, WinChecker;
     public int BuyMult, AutoBuyerBuyMult;
     private void Start()
     {
         ProductionCostX10_Mult = 1.258;
         prestigeUpgrades1 = gameObject.GetComponent<PrestigeUpgrades1>();
         BuyMult = 1;
-        BuyTenMult = 3;
+        BuyTenMult = 2.5;
         baseBiomass = GetComponent<BiomassManager>().biomass;
         BaseValues();
-        InvokeRepeating("ProductionTextUpdater", 0.1f, 0.1f);
+        InvokeRepeating("ProductionTextUpdater", 0.05f, 0.05f);
+
+        FirstPrimalQueenPrice = 100;
+        FirstPrimalQueenProduction = 1;
     }
     private void FixedUpdate()
     {
+        ProductionPrices = new double[] { FirstQueenPrice, FirstHivePrice, SecondQueenPrice, SecondHivePrice, ThirdQueenPrice, ThirdHivePrice, FourthQueenPrice, FourthHivePrice, FirstPrimalQueenPrice };
+
+        foreach (GameObject production in productions)
+        {
+            if (i<8)
+            {
+                if (ProductionPrices[i] <= GetComponent<BiomassManager>().biomass)
+                {
+                    production.GetComponent<Button>().interactable = true;
+                }
+                else
+                {
+                    production.GetComponent<Button>().interactable = false;
+                }
+            }
+            else if (i>=8)
+            {
+                if (ProductionPrices[i] <= GetComponent<PrestigeUpgrades1>().OP)
+                {
+                    production.GetComponent<Button>().interactable = true;
+                }
+                else
+                {
+                    production.GetComponent<Button>().interactable = false;
+                }
+            }
+            i++;
+        }
+        i = 0;
         AutoBuyerBuyMult = GetComponent<PrestigeUpgrades1>().AutoBuyerBuyMult;
 
-        if (Input.anyKey && StartScreen.activeSelf == true)
         {
-            StartScreen.SetActive(!StartScreen.activeSelf);
-            Invoke("GameStart", 3);
-        }
-        if (GetComponent<BiomassManager>().biomass > 1e30 && Hint2Checker == false)
-        {
-            Hint2Checker = true;
-            Hints[1].SetActive(true);
-            MergeButton.SetActive(true);
-            Prestige1UpgradeTab.SetActive(true);
-        }
-        if (GetComponent<PrestigeUpgrades1>().Overseers >= 10 && Hint3Checker == false)
-        {
-            Hint3Checker = true;
-            Hints[2].SetActive(true);
-        }
-        if (GetComponent<BiomassManager>().biomass > 1e300 && WinChecker == false)
-        {
-            WinChecker = true;
-            Hints[3].SetActive(true);
-        }
+            if (GetComponent<BiomassManager>().biomass < 1e40)
+            {
+                MergeUnlockButton.GetComponent<Button>().interactable = false;
+            }
+            else
+            {
+                MergeUnlockButton.GetComponent<Button>().interactable = true;
+            }
+            if (GetComponent<BiomassManager>().biomass < 1e200)
+            {
+                QQUnlockButton.GetComponent<Button>().interactable = false;
+            }
+            else
+            {
+                QQUnlockButton.GetComponent<Button>().interactable = true;
+            }
+            if (GetComponent<BiomassManager>().biomass < 1e300)
+            {
+                SpireButton.GetComponent<Button>().interactable = false;
+                SpireUnlockButton.GetComponent<Button>().interactable = false;
+            }
+            else
+            {
+                SpireButton.GetComponent<Button>().interactable = true;
+                SpireUnlockButton.GetComponent<Button>().interactable = true;
+            }
+
+            if (Input.anyKey && StartScreen.activeSelf == true)
+            {
+                StartScreen.SetActive(!StartScreen.activeSelf);
+                Invoke("GameStart", 3);
+            }
+            if (MergeUnlockButton.activeSelf == false && Hint2Checker == false)
+            {
+                Hint2Checker = true;
+                Hints[1].SetActive(true);
+                MergeButton.SetActive(true);
+                Prestige1UpgradeTab.SetActive(true);
+            }
+            if (GetComponent<PrestigeUpgrades1>().Overseers >= 10 && Hint3Checker == false)
+            {
+                Hint3Checker = true;
+                Hints[2].SetActive(true);
+                QQUnlockButton.SetActive(true);
+            }
+            if (FirstPrimalQueenCount >= 1 && Hint4Checker == false)
+            {
+                Hint4Checker = true;
+                Hints[3].SetActive(true);
+                SpireUnlockButton.SetActive(true);
+            }
+
+            if (WinScreen.activeSelf == true && WinChecker == false)
+            {
+                WinChecker = true;
+                Invoke("WinText1", 2f);
+            }
+        }// Hints and other
 
         {
+            OPCopy = GetComponent<PrestigeUpgrades1>().OP;
             biomassCopy = GetComponent<BiomassManager>().biomass;
 
             FirstQueenPriceCopy = FirstQueenPrice;
@@ -92,6 +167,9 @@ public class ProductionPurchase : MonoBehaviour
             FourthQueenPriceCopy = FourthQueenPrice;
             FourthQueenCountCopy = FourthQueenCount;
             FourthQueenBuyTenCopy = FourthQueenBuyTen;
+            FirstPrimalQueenPriceCopy = FirstPrimalQueenPrice;
+            FirstPrimalQueenCountCopy = FirstPrimalQueenCount;
+            FirstPrimalQueenBuyTenCopy = FirstPrimalQueenBuyTen;
 
             FirstHivePriceCopy = FirstHivePrice;
             FirstHiveCountCopy = FirstHiveCount;
@@ -113,17 +191,19 @@ public class ProductionPurchase : MonoBehaviour
         SecondQueenMult = SecondQueenProduction * Math.Pow(BuyTenMult, SecondQueenBuyTen) * OverseersMult;
         ThirdQueenMult = ThirdQueenProduction * Math.Pow(BuyTenMult, ThirdQueenBuyTen) * OverseersMult;
         FourthQueenMult = FourthQueenProduction * Math.Pow(BuyTenMult, FourthQueenBuyTen) * OverseersMult;
+        FirstPrimalQueenMult = FirstPrimalQueenProduction * Math.Pow(BuyTenMult, FirstPrimalQueenBuyTen) * (OverseersMult * 100);
 
         FirstHiveMult = FirstHiveProduction * Math.Pow(BuyTenMult, FirstHiveBuyTen) * OverseersMult;
         SecondHiveMult = SecondHiveProduction * Math.Pow(BuyTenMult, SecondHiveBuyTen) * OverseersMult;
         ThirdHiveMult = ThirdHiveProduction * Math.Pow(BuyTenMult, ThirdHiveBuyTen) * OverseersMult;
         FourthHiveMult = FourthHiveProduction * Math.Pow(BuyTenMult, FourthHiveBuyTen) * OverseersMult;
 
-        // слнл
+        
         TotalProduction = (FirstQueenCount + FirstQueenAddedCount) * FirstQueenMult;
         SecondQueenTotalProduction = (SecondQueenCount + SecondQueenAddedCount) * SecondQueenMult;
         ThirdQueenTotalProduction = (ThirdQueenCount + ThirdQueenAddedCount) * ThirdQueenMult;
         FourthQueenTotalProduction = (FourthQueenCount + FourthQueenAddedCount) * FourthQueenMult;
+        FirstPrimalQueenTotalProduction = (FirstPrimalQueenCount + FirstPrimalQueenAddedCount) * FirstPrimalQueenMult;
 
         FirstHiveTotalProduction = (FirstHiveCount + FirstHiveAddedCount) * FirstHiveMult;
         SecondHiveTotalProduction = (SecondHiveCount + SecondHiveAddedCount) * SecondHiveMult;
@@ -131,6 +211,7 @@ public class ProductionPurchase : MonoBehaviour
         FourthHiveTotalProduction = (FourthHiveCount + FourthHiveAddedCount) * FourthHiveMult;
 
     }
+    /// -------------------------------------------------------------------------------
     public void BaseValues()
     {
         GetComponent<BiomassManager>().biomass = baseBiomass;
@@ -139,18 +220,20 @@ public class ProductionPurchase : MonoBehaviour
         FirstQueenProduction = 1;
         SecondQueenPrice = 5000;
         SecondQueenProduction = 1;
-        ThirdQueenPrice = 100000;
+        ThirdQueenPrice = 1000000;
         ThirdQueenProduction = 1;
-        FourthQueenPrice = 1000000000;
+        FourthQueenPrice = 1000000000000;
         FourthQueenProduction = 1;
+        //FirstPrimalQueenPrice = 100;
+        //FirstPrimalQueenProduction = 1;
 
         FirstHivePrice = 100;
         FirstHiveProduction = 1;
         SecondHivePrice = 10000;
         SecondHiveProduction = 1;
-        ThirdHivePrice = 10000000;
+        ThirdHivePrice = 1000000000;
         ThirdHiveProduction = 1;
-        FourthHivePrice = 1000000000000;
+        FourthHivePrice = 1000000000000000;
         FourthHiveProduction = 1;
     }
     public void ZeroValues()
@@ -244,7 +327,7 @@ public class ProductionPurchase : MonoBehaviour
     {
         if (BuyMult == 1 && GetComponent<PrestigeUpgrades1>().BuyMax == true)
         {
-            BuyMult = 3000;
+            BuyMult = 800;
             return;
         }
         //if (BuyMult == 10)
@@ -257,7 +340,7 @@ public class ProductionPurchase : MonoBehaviour
         //    BuyMult = 10000;
         //    return;
         //}
-        if (BuyMult == 3000)
+        if (BuyMult == 800)
         {
             BuyMult = 1;
             return;
@@ -341,6 +424,27 @@ public class ProductionPurchase : MonoBehaviour
                 else
                 {
                     FourthQueenPrice *= ProductionCostMult;
+                }
+            }
+        }
+    }
+    public void FirstPrimalQueenBuy()
+    {
+        for (int i = BuyMult; i > 0; i--)
+        {
+            if (GetComponent<PrestigeUpgrades1>().OP >= FirstPrimalQueenPrice)
+            {
+                GetComponent<PrestigeUpgrades1>().OP -= FirstPrimalQueenPrice;
+                FirstPrimalQueenCount += 1;
+                if (FirstPrimalQueenCount % 10 == 0 && FirstPrimalQueenCount != 0)
+                {
+                    FirstPrimalQueenBuyTen += 1;
+                    FirstPrimalQueenPrice *= 10 * Math.Pow(ProductionCostX10_Mult, FirstPrimalQueenBuyTen);
+                    Debug.Log(10 * Math.Pow(ProductionCostX10_Mult, FirstPrimalQueenBuyTen));
+                }
+                else
+                {
+                    FirstPrimalQueenPrice *= ProductionCostMult;
                 }
             }
         }
@@ -438,7 +542,7 @@ public class ProductionPurchase : MonoBehaviour
                 {
                     FirstQueenPrice *= 10 * Math.Pow(ProductionCostX10_Mult, FirstQueenBuyTen);
                     FirstQueenBuyTen += 1;
-                    Debug.Log(10 * Math.Pow(ProductionCostX10_Mult, FirstQueenBuyTen));
+                    //Debug.Log(10 * Math.Pow(ProductionCostX10_Mult, FirstQueenBuyTen));
                 }
                 else
                 {
@@ -686,6 +790,30 @@ public class ProductionPurchase : MonoBehaviour
         biomassCopy = GetComponent<BiomassManager>().biomass;
         //Debug.Log($"X{FourthQueenBuyBulkCount} {FourthQueenBuyBulkPrice}");
     }
+    public void FirstPrimalQueenBuyCounter()
+    {
+        for (int i = BuyMult; i > 0; i--)
+        {
+            if (OPCopy >= FirstPrimalQueenPriceCopy)
+            {
+                OPCopy -= FirstPrimalQueenPriceCopy;
+                FirstPrimalQueenBuyBulkPrice += FirstPrimalQueenPriceCopy;
+                FirstPrimalQueenBuyBulkCount += 1;
+                FirstPrimalQueenCountCopy += 1;
+                if (FirstPrimalQueenCountCopy % 10 == 0 && FirstPrimalQueenCountCopy != 0)
+                {
+                    FirstPrimalQueenBuyTenCopy += 1;
+                    FirstPrimalQueenPriceCopy *= 10 * Math.Pow(ProductionCostX10_Mult, FirstPrimalQueenBuyTenCopy);
+                }
+                else
+                {
+                    FirstPrimalQueenPriceCopy *= ProductionCostMult;
+                }
+            }
+        }
+        OPCopy = GetComponent<PrestigeUpgrades1>().OP;
+        //Debug.Log($"X{FirstPrimalQueenBuyBulkCount} {FirstPrimalQueenBuyBulkPrice}");
+    }
     public void FirstHiveBuyCounter()
     {
         for (int i = BuyMult; i > 0; i--)
@@ -781,7 +909,7 @@ public class ProductionPurchase : MonoBehaviour
         }
         biomassCopy = GetComponent<BiomassManager>().biomass;
         //Debug.Log($"X{FourthHiveBuyBulkCount} {FourthHiveBuyBulkPrice}");
-    } 
+    }
     /// -------------------------------------------------------------------------------
     public void ProductionTextUpdater()
     {
@@ -1185,10 +1313,113 @@ public class ProductionPurchase : MonoBehaviour
                 }
             }
         }//8
+        {
+            productions[8].transform.GetChild(1).GetComponent<Text>().text = $"{(FirstPrimalQueenCount + FirstPrimalQueenAddedCount).ToString("0.00e0")}";
+            if ((FirstPrimalQueenCount + FirstPrimalQueenAddedCount) < 1000000)
+            {
+                productions[8].transform.GetChild(1).GetComponent<Text>().text = $"{(FirstPrimalQueenCount + FirstPrimalQueenAddedCount).ToString("0")}";
+            }
+            if (FirstPrimalQueenMult < 1000000)
+            {
+                productions[8].transform.GetChild(2).GetComponent<Text>().text = $"x{FirstPrimalQueenMult.ToString("0")}";
+            }
+            else
+            {
+                productions[8].transform.GetChild(2).GetComponent<Text>().text = $"x{FirstPrimalQueenMult.ToString("0.00e0")}";
+            }
+            productions[8].transform.GetChild(3).GetComponent<Text>().text = $"{FirstPrimalQueenCount % 10}/10";
+            if (BuyMult == 1)
+            {
+                if (FirstPrimalQueenPrice < 1000000)
+                {
+                    productions[8].transform.GetChild(4).GetComponent<Text>().text = $"{FirstPrimalQueenPrice.ToString("0.0 OP")}";
+                }
+                else
+                {
+                    productions[8].transform.GetChild(4).GetComponent<Text>().text = $"{FirstPrimalQueenPrice.ToString("0.00e0 OP")}";
+                }
+            }
+            else
+            {
+                FirstPrimalQueenBuyCounter();
+                if (FirstPrimalQueenBuyBulkPrice == 0)
+                {
+                    FirstPrimalQueenBuyBulkPrice = FirstPrimalQueenPrice;
+                }
+                if (FirstPrimalQueenBuyBulkCount == 0)
+                {
+                    FirstPrimalQueenBuyBulkCount = 1;
+                }
+
+                if (FirstPrimalQueenBuyBulkPrice < 1000000)
+                {
+                    productions[8].transform.GetChild(4).GetComponent<Text>().text = $"x{FirstPrimalQueenBuyBulkCount} {FirstPrimalQueenBuyBulkPrice.ToString("0.0 OP")}";
+                    FirstPrimalQueenBuyBulkCount = FirstPrimalQueenBuyBulkPrice = 0;
+                }
+                else
+                {
+                    productions[8].transform.GetChild(4).GetComponent<Text>().text = $"x{FirstPrimalQueenBuyBulkCount} {FirstPrimalQueenBuyBulkPrice.ToString("0.00e0 OP")}";
+                    FirstPrimalQueenBuyBulkCount = FirstPrimalQueenBuyBulkPrice = 0;
+                }
+            }
+        }//9
+        //Debug.Log("qwe");
+    }
+    /// -------------------------------------------------------------------------------
+    public void WinText1()
+    {
+        Invoke("WinText2", 3f);
+        WinTexts[wt].SetActive(true);
+        wt++;
+    }
+    public void WinText2()
+    {
+        Invoke("WinText3", 3f);
+        WinTexts[wt].SetActive(true);
+        wt++;
+    }
+    public void WinText3()
+    {
+        Invoke("WinText4", 3f);
+        WinTexts[wt].SetActive(true);
+        wt++;
+    }
+    public void WinText4()
+    {
+        //Invoke("WinText4", 3f);
+        WinTexts[wt].SetActive(true);
+        //wt++;
+    }
+    public void SceneReaload(int SceneNumber)
+    {
+        SceneManager.LoadScene(SceneNumber);
     }
     /// -------------------------------------------------------------------------------
     public void GameStart()
     {
         Hints[0].SetActive(true);
     }
+    public void MergeUnlock()
+    {
+        if (GetComponent<BiomassManager>().biomass >= 1e40)
+        {
+            GetComponent<BiomassManager>().biomass -= 1e40;
+        }
+    }
+    public void QQUnlock()
+    {
+        if (GetComponent<BiomassManager>().biomass >= 1e200)
+        {
+            GetComponent<BiomassManager>().biomass -= 1e200;
+        }
+    }
+    public void SpireUnlock()
+    {
+        if (GetComponent<BiomassManager>().biomass >= 1e300)
+        {
+            GetComponent<BiomassManager>().biomass -= 1e300;
+        }
+    }
+    /// -------------------------------------------------------------------------------
+    
 }

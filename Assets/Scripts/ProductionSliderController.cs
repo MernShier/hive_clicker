@@ -41,5 +41,9 @@ public class ProductionSliderController : MonoBehaviour
         {
             gameObject.GetComponent<Slider>().value = (float)Manager.GetComponent<ProductionPurchase>().FourthHiveCount % 10;
         }
+        if (Number == 9)
+        {
+            gameObject.GetComponent<Slider>().value = (float)Manager.GetComponent<ProductionPurchase>().FirstPrimalQueenCount % 10;
+        }
     }
 }

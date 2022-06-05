@@ -14,4 +14,15 @@ public class TabController : MonoBehaviour
     {
         ObjectSetTrue.SetActive(false);
     }
+    public void SetReverse(GameObject ObjectSetReverse)
+    {
+        if (ObjectSetReverse.activeSelf != true)
+        {
+            ObjectSetReverse.SetActive(true);
+        }
+        else
+        {
+            ObjectSetReverse.SetActive(false);
+        }
+    }
 }

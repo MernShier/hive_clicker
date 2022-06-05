@@ -11,7 +11,14 @@ public class PUpgrades1Refresher : MonoBehaviour
     {
         if (ID == 0)
         {
-            gameObject.GetComponent<Text>().text = $"You will gain:\n{ Manager.GetComponent<PrestigeUpgrades1>().OPOnPrestige1} Overseers";
+            if (Manager.GetComponent<PrestigeUpgrades1>().BiomassForOverseer < 1e281)
+            {
+                gameObject.GetComponent<Text>().text = $"You will gain { Manager.GetComponent<PrestigeUpgrades1>().OPOnPrestige1} Overseers\n Next on {Manager.GetComponent<PrestigeUpgrades1>().BiomassForOverseer.ToString("0e0")} Biomass";
+            }
+            else
+            {
+                gameObject.GetComponent<Text>().text = $"You will gain { Manager.GetComponent<PrestigeUpgrades1>().OPOnPrestige1} Overseers";
+            }
         }
     }
 }
